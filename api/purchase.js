@@ -71,8 +71,8 @@ module.exports = async (req, res) => {
         console.log('Event sent successfully:', response.data);
         return res.status(200).json({ success: true, data: response.data });
     } catch (error) {
-        console.error('Error sending event:', error.response?.data || error.message);
-        console.log('Request Body:', requestBody); // Log the request body
+        console.error('Error sending event:', error.response ? error.response.data : error.message);
+        console.log('Request Body:', JSON.stringify(requestBody, null, 2)); // Log the request body
         return res.status(500).json({ error: error.response?.data?.error?.message || error.message });
     }
 };
