@@ -6,6 +6,15 @@ function hashData(data) {
     return crypto.createHash('sha256').update(data.trim()).digest('hex');
 }
 
+// Function to format the fbc parameter
+function formatFbc(fbclid) {
+    const version = 'fb';
+    const subdomainIndex = 0; // Assuming the domain is 'com'
+    const creationTime = Date.now(); // Current timestamp in milliseconds
+
+    return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`;
+}
+
 // This will be the main function executed when the route is hit
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
@@ -13,16 +22,22 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url } = req.body;
+    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid } = req.body;
 
     // Validate input
-    if (!phone || !value || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
+    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
         return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, and source_url are required' });
     }
 
     try {
         // Hash the user's phone number to protect privacy
         const hashedPhone = hashData(phone.replace('+', '')); // Remove '+' and hash
+
+        // Format the fbc parameter if fbclid is provided
+        let fbc = null;
+        if (fbclid) {
+            fbc = formatFbc(fbclid);
+        }
 
         // Prepare data for Facebook's Conversions API
         const eventData = {
@@ -35,7 +50,8 @@ module.exports = async (req, res) => {
                 custom_data: {
                     value: value,  // Use the value from the request body
                     currency: currency || 'USD',
-                    source_url: source_url  // Include the source URL
+                    source_url: source_url,  // Include the source URL
+                    fbc: fbc  // Include the formatted fbc if available
                 }
             }]
         };
@@ -47,8 +63,8 @@ module.exports = async (req, res) => {
             currency: currency,
             PIXEL_ID: PIXEL_ID,
             ACCESS_TOKEN: ACCESS_TOKEN,
-            source_url: source_url
-            // Other fields like zip, st, ct, fbc, client_ip_address, client_user_agent can be added if needed
+            source_url: source_url,
+            fbc: fbc  // Include the formatted fbc in the request body
         };
 
         // Log the request body for debugging
