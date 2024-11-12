@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url } = req.body;
+    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zip, st, fbc, ct, client_ip_address, client_user_agent } = req.body;
 
     // Validate input
     if (!phone || !value || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
@@ -56,7 +56,6 @@ module.exports = async (req, res) => {
     } catch (error) {
         const errorMessage = error.response?.data?.error?.message || error.message;
         console.error('Error sending event to Facebook:', errorMessage);
-        console.log('Request Body:', eventData); // Log the request body
         return res.status(500).json({ error: errorMessage });
     }
 };
