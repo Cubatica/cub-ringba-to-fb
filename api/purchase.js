@@ -3,14 +3,14 @@ const crypto = require('crypto');
 
 // Helper function to hash data (for phone number in this case)
 function hashData(data) {
-    return crypto.createHash('sha256').update(data.trim()).digest('hex');
+    return crypto.createHash('sha256').update(data.trim().toLowerCase()).digest('hex');
 }
 
 // Function to format the fbc parameter
 function formatFbc(fbclid) {
     const version = 'fb';
     const subdomainIndex = 0; // Assuming the domain is 'com'
-    const creationTime = Date.now(); // Current timestamp in milliseconds
+    const creationTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
 
     return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`;
 }
@@ -46,15 +46,19 @@ module.exports = async (req, res) => {
                 event_time: Math.floor(Date.now() / 1000),
                 user_data: {
                     ph: [hashedPhone],  // Facebook expects an array of hashed values
+                    fbc: fbc,  // Include the formatted fbc
                 },
                 custom_data: {
                     value: value,  // Use the value from the request body
                     currency: currency || 'USD',
-                    source_url: source_url,  // Include the source URL
-                    fbc: fbc  // Include the formatted fbc if available
-                }
+                },
+                event_source_url: source_url,  // Updated to include event source URL
+                action_source: 'website',  // Added action source
             }]
         };
+
+        const apiVersion = 'v18.0'; // Added API version
+        const url = `https://graph.facebook.com/${apiVersion}/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`; // Updated URL
 
         // Prepare the request body
         const requestBody = {
@@ -71,7 +75,7 @@ module.exports = async (req, res) => {
         console.log('Request Body:', requestBody);
 
         // Send event to Facebook
-        const response = await axios.post('https://your-api-endpoint.com/purchase', requestBody, {
+        const response = await axios.post(url, eventData, {
             headers: {
                 'Content-Type': 'application/json',
             },
