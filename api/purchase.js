@@ -24,6 +24,9 @@ module.exports = async (req, res) => {
         // Hash the user's phone number to protect privacy
         const hashedPhone = hashData(phone);
 
+        // Ensure value is a number
+        const numericValue = Number(value);
+
         // Prepare data for Facebook's Conversions API
         const eventData = {
             data: [{
@@ -33,12 +36,31 @@ module.exports = async (req, res) => {
                     ph: [hashedPhone],  // Facebook expects an array of hashed values
                 },
                 custom_data: {
-                    value: parseFloat(value),  // Ensure value is a number
+                    value: numericValue,  // Ensure value is a number
                     currency: currency || 'USD',
                     source_url: source_url  // Include the source URL
                 }
             }]
         };
+
+        // Prepare the request body
+        const requestBody = {
+            phone: hashedPhone,
+            value: numericValue,  // Allow 0 as a valid value
+            currency: currency,
+            PIXEL_ID: PIXEL_ID,
+            ACCESS_TOKEN: ACCESS_TOKEN,
+            source_url: source_url,
+            zip: hashedZip,
+            st: hashedState,
+            ct: hashedCity,
+            fbc: fbc,
+            client_ip_address: client_ip_address,
+            client_user_agent: client_user_agent
+        };
+
+        // Log the request body for debugging
+        console.log('Request Body:', requestBody);
 
         // Send event to Facebook
         const response = await axios.post(
@@ -56,7 +78,6 @@ module.exports = async (req, res) => {
     } catch (error) {
         const errorMessage = error.response?.data?.error?.message || error.message;
         console.error('Error sending event to Facebook:', errorMessage);
-        console.log('Request Body:', eventData); // Log the request body
         return res.status(500).json({ error: errorMessage });
     }
 };
