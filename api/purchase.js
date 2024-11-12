@@ -39,6 +39,9 @@ module.exports = async (req, res) => {
             fbc = formatFbc(fbclid);
         }
 
+        // Log the fbc value for debugging
+        console.log('Formatted fbc:', fbc);
+
         // Prepare data for Facebook's Conversions API
         const eventData = {
             data: [{
@@ -80,7 +83,7 @@ module.exports = async (req, res) => {
                 'Content-Type': 'application/json',
             },
         });
-        console.log('Event sent successfully:', response.data);
+        console.log('Event sent successfully:', response.data); // Log the response from Facebook
         return res.status(200).json({ success: true, data: response.data });
     } catch (error) {
         console.error('Error sending event:', error.response ? error.response.data : error.message);
