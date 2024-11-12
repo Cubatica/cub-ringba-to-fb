@@ -22,10 +22,7 @@ module.exports = async (req, res) => {
 
     try {
         // Hash the user's phone number to protect privacy
-        const hashedPhone = hashData(phone);
-
-        // Ensure value is a number
-        const numericValue = Number(value);
+        const hashedPhone = hashData(phone.replace('+', '')); // Remove '+' and hash
 
         // Prepare data for Facebook's Conversions API
         const eventData = {
@@ -36,7 +33,7 @@ module.exports = async (req, res) => {
                     ph: [hashedPhone],  // Facebook expects an array of hashed values
                 },
                 custom_data: {
-                    value: numericValue,  // Ensure value is a number
+                    value: value,  // Use the value from the request body
                     currency: currency || 'USD',
                     source_url: source_url  // Include the source URL
                 }
@@ -46,17 +43,12 @@ module.exports = async (req, res) => {
         // Prepare the request body
         const requestBody = {
             phone: hashedPhone,
-            value: numericValue,  // Allow 0 as a valid value
+            value: value,  // Set value to the incoming value from the request body
             currency: currency,
             PIXEL_ID: PIXEL_ID,
             ACCESS_TOKEN: ACCESS_TOKEN,
-            source_url: source_url,
-            zip: hashedZip,
-            st: hashedState,
-            ct: hashedCity,
-            fbc: fbc,
-            client_ip_address: client_ip_address,
-            client_user_agent: client_user_agent
+            source_url: source_url
+            // Other fields like zip, st, ct, fbc, client_ip_address, client_user_agent can be added if needed
         };
 
         // Log the request body for debugging
