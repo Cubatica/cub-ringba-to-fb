@@ -1,5 +1,8 @@
 const axios = require('axios');
 const crypto = require('crypto');
+const express = require('express');
+const app = express();
+const port = 3000;
 
 // Helper function to hash data (for phone number in this case)
 function hashData(data) {
@@ -111,4 +114,19 @@ module.exports = async (req, res) => {
         return res.status(500).json({ error: error.response?.data?.error?.message || error.message });
     }
 };
+
+// Allow GET method for /api/purchase
+app.get('/api/purchase', (req, res) => {
+    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zip, st, ct, fbc, client_ip_address, client_user_agent } = req.query;
+
+    // Process the request here
+    // ...
+
+    res.send('GET request received');
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
 
