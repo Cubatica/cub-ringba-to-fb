@@ -44,11 +44,11 @@ module.exports = async (req, res) => {
     // Handle GET request
     if (req.method === 'GET') {
         // Extract query parameters
-        const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name } = req.query;
+        const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name } = req.query;
 
         // Validate input
-        if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
-            return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
+        if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
+            return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
         }
 
         // Extract action_source from query parameters
@@ -65,16 +65,16 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name } = req.body;
 
     // Validate input
-    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
-        return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
     }
 
     try {
         // Hash the user's phone number to protect privacy
-        const hashedPhone = hashData(phone.replace('+', '')); // Remove '+' and hash
+        const hashedPhone = hashData(ph.replace('+', '')); // Remove '+' and hash
 
         // Format the fbc parameter if fbclid is provided
         let fbc = null;
@@ -118,7 +118,7 @@ module.exports = async (req, res) => {
 
         // Prepare the request body
         const requestBody = {
-            phone: hashedPhone,
+            ph: hashedPhone,
             value: value,  // Set value to the incoming value from the request body
             currency: currency,
             PIXEL_ID: PIXEL_ID,
@@ -149,11 +149,11 @@ module.exports = async (req, res) => {
 
 // Allow GET method for /api/purchase
 app.get('/api/purchase', (req, res) => {
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, event_name } = req.query;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, event_name } = req.query;
 
     // Validate input
-    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
-        return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
     }
 
     // Extract action_source from query parameters
@@ -170,11 +170,11 @@ app.get('/api/purchase', (req, res) => {
 
 // Allow POST method for /api/purchase
 app.post('/api/purchase', (req, res) => {
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, event_name } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, event_name } = req.body;
 
     // Validate input
-    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
-        return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
     }
 
     // Extract action_source from request body
