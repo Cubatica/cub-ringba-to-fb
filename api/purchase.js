@@ -86,7 +86,9 @@ module.exports = async (req, res) => {
             },
         });
         console.log('Event sent successfully:', response.data); // Log the response from Facebook
-        return res.status(200).json({ success: true, data: response.data });
+
+        // Update the response to include meaningful data
+        return res.status(200).json({ success: true, data: response.data }); // Ensure response.data is meaningful
     } catch (error) {
         console.error('Error sending event:', error.response ? error.response.data : error.message);
         console.log('Request Body:', JSON.stringify(requestBody, null, 2)); // Log the request body
