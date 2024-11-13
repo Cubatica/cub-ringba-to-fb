@@ -1,7 +1,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 
-// Helper function to hash data (for phone number in this case)
+// Helper function to hash data
 function hashData(data) {
     return crypto.createHash('sha256').update(data.trim().toLowerCase()).digest('hex');
 }
@@ -15,32 +15,40 @@ function formatFbc(fbclid) {
     return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`;
 }
 
-// This will be the main function executed when the route is hit
+// Main function executed when the route is hit
 module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
+    if (req.method !== 'GET') { // Change to GET method
         return res.status(405).send('Method Not Allowed');
     }
 
-    // Extract purchase data from the request body
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid } = req.body;
+    // Extract parameters from the query string
+    const {
+        phone,
+        value,
+        currency,
+        source_url,
+        zip,
+        st,
+        ct,
+        fbc,
+        client_ip_address,
+        client_user_agent
+    } = req.query;
 
     // Validate input
-    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
-        return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, and source_url are required' });
+    if (!phone || (value === undefined || value === null) || !source_url) {
+        return res.status(400).json({ error: 'Missing required fields: phone, value, and source_url are required' });
     }
 
     try {
-        // Hash the user's phone number to protect privacy
+        // Hash the user's phone number
         const hashedPhone = hashData(phone.replace('+', '')); // Remove '+' and hash
 
         // Format the fbc parameter if fbclid is provided
-        let fbc = null;
-        if (fbclid) {
-            fbc = formatFbc(fbclid);
+        let formattedFbc = null;
+        if (fbc) {
+            formattedFbc = formatFbc(fbc);
         }
-
-        // Log the fbc value for debugging
-        console.log('Formatted fbc:', fbc);
 
         // Prepare data for Facebook's Conversions API
         const eventData = {
@@ -49,10 +57,10 @@ module.exports = async (req, res) => {
                 event_time: Math.floor(Date.now() / 1000),
                 user_data: {
                     ph: [hashedPhone],  // Facebook expects an array of hashed values
-                    fbc: fbc,  // Include the formatted fbc
+                    fbc: formattedFbc,  // Include the formatted fbc
                 },
                 custom_data: {
-                    value: value,  // Use the value from the request body
+                    value: value,  // Use the value from the query string
                     currency: currency || 'USD',
                 },
                 event_source_url: source_url,  // Updated to include event source URL
@@ -60,22 +68,8 @@ module.exports = async (req, res) => {
             }]
         };
 
-        const apiVersion = 'v18.0'; // Added API version
-        const url = `https://graph.facebook.com/${apiVersion}/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`; // Updated URL
-
-        // Prepare the request body
-        const requestBody = {
-            phone: hashedPhone,
-            value: value,  // Set value to the incoming value from the request body
-            currency: currency,
-            PIXEL_ID: PIXEL_ID,
-            ACCESS_TOKEN: ACCESS_TOKEN,
-            source_url: source_url,
-            fbc: fbc  // Include the formatted fbc in the request body
-        };
-
-        // Log the request body for debugging
-        console.log('Request Body:', requestBody);
+        const apiVersion = 'v18.0'; // API version
+        const url = `https://graph.facebook.com/${apiVersion}/events`; // Updated URL without PIXEL_ID and ACCESS_TOKEN
 
         // Send event to Facebook
         const response = await axios.post(url, eventData, {
@@ -87,7 +81,6 @@ module.exports = async (req, res) => {
         return res.status(200).json({ success: true, data: response.data });
     } catch (error) {
         console.error('Error sending event:', error.response ? error.response.data : error.message);
-        console.log('Request Body:', JSON.stringify(requestBody, null, 2)); // Log the request body
         return res.status(500).json({ error: error.response?.data?.error?.message || error.message });
     }
 };
