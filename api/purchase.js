@@ -4,6 +4,9 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
+// Middleware to parse JSON bodies
+app.use(express.json());
+
 // Helper function to hash data (for phone number in this case)
 function hashData(data) {
     return crypto.createHash('sha256').update(data.trim().toLowerCase()).digest('hex');
@@ -117,12 +120,28 @@ module.exports = async (req, res) => {
 
 // Allow GET method for /api/purchase
 app.get('/api/purchase', (req, res) => {
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zip, st, ct, fbc, client_ip_address, client_user_agent } = req.query;
+    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url } = req.query;
 
-    // Process the request here
-    // ...
+    // Validate input
+    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
 
-    res.send('GET request received');
+    // Process the request
+    return res.status(200).json({ message: 'GET request received', data: req.query });
+});
+
+// Allow POST method for /api/purchase
+app.post('/api/purchase', (req, res) => {
+    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url } = req.body;
+
+    // Validate input
+    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Process the request
+    return res.status(200).json({ message: 'POST request received', data: req.body });
 });
 
 // Start the server
