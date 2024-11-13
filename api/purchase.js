@@ -17,11 +17,27 @@ function formatFbc(fbclid) {
 
 // This will be the main function executed when the route is hit
 module.exports = async (req, res) => {
-    if (req.method !== 'POST') {
+    // Allow both POST and GET methods
+    if (req.method !== 'POST' && req.method !== 'GET') {
         return res.status(405).send('Method Not Allowed');
     }
 
-    // Extract purchase data from the request body
+    // Handle GET request
+    if (req.method === 'GET') {
+        // Extract query parameters
+        const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid } = req.query;
+
+        // Validate input
+        if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
+            return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, and source_url are required' });
+        }
+
+        // You can add logic here to handle the GET request as needed
+        // For example, you might want to log the data or return a success message
+        return res.status(200).json({ message: 'GET request received', data: req.query });
+    }
+
+    // Extract purchase data from the request body for POST
     const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid } = req.body;
 
     // Validate input
