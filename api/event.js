@@ -31,24 +31,24 @@ module.exports = async (req, res) => {
     // Handle GET request
     if (req.method === 'GET') {
         // Extract query parameters
-        const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid } = req.query;
+        const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name } = req.query;
 
         // Validate input
-        if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
-            return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, and source_url are required' });
+        if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
+            return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
         }
 
         // You can add logic here to handle the GET request as needed
         // For example, you might want to log the data or return a success message
-        return res.status(200).json({ message: 'GET request received', data: req.query });
+        return res.status(200).json({ message: `${event_name} event received`, data: req.query });
     }
 
     // Extract purchase data from the request body for POST
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid } = req.body;
+    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name } = req.body;
 
     // Validate input
-    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
-        return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, and source_url are required' });
+    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
+        return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
     }
 
     try {
@@ -120,31 +120,32 @@ module.exports = async (req, res) => {
 
 // Allow GET method for /api/purchase
 app.get('/api/purchase', (req, res) => {
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url } = req.query;
+    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, event_name } = req.query;
 
     // Validate input
-    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
+        return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
     }
 
     // Process the request
-    return res.status(200).json({ message: 'GET request received', data: req.query });
+    return res.status(200).json({ message: `${event_name} event received`, data: req.query });
 });
 
 // Allow POST method for /api/purchase
 app.post('/api/purchase', (req, res) => {
-    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url } = req.body;
+    const { phone, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, event_name } = req.body;
 
     // Validate input
-    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
+        return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
     }
 
     // Process the request
-    return res.status(200).json({ message: 'POST request received', data: req.body });
+    return res.status(200).json({ message: `${event_name} event received`, data: req.body });
 });
 
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
