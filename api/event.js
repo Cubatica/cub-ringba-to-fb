@@ -21,6 +21,19 @@ function formatFbc(fbclid) {
     return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`;
 }
 
+// Define valid action sources
+const validActionSources = [
+    'email',
+    'website',
+    'app',
+    'phone_call',
+    'chat',
+    'physical_store',
+    'system_generated',
+    'business_messaging',
+    'other'
+];
+
 // This will be the main function executed when the route is hit
 module.exports = async (req, res) => {
     // Allow both POST and GET methods
@@ -36,6 +49,14 @@ module.exports = async (req, res) => {
         // Validate input
         if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
             return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
+        }
+
+        // Extract action_source from query parameters
+        const action_source = req.query.action_source || 'website';
+
+        // Validate action_source
+        if (!validActionSources.includes(action_source)) {
+            return res.status(400).json({ error: 'Invalid action_source value.' });
         }
 
         // You can add logic here to handle the GET request as needed
@@ -64,6 +85,14 @@ module.exports = async (req, res) => {
         // Log the fbc value for debugging
         console.log('Formatted fbc:', fbc);
 
+        // Extract action_source from request body
+        const action_source = req.body.action_source || 'website';
+
+        // Validate action_source
+        if (!validActionSources.includes(action_source)) {
+            return res.status(400).json({ error: 'Invalid action_source value.' });
+        }
+
         // Prepare data for Facebook's Conversions API
         const eventData = {
             data: [{
@@ -78,7 +107,7 @@ module.exports = async (req, res) => {
                     currency: currency || 'USD',
                 },
                 event_source_url: source_url,  // Updated to include event source URL
-                action_source: 'website',  // Added action source
+                action_source: action_source,  // Updated to use dynamic action source
             }]
         };
 
@@ -127,6 +156,14 @@ app.get('/api/purchase', (req, res) => {
         return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
     }
 
+    // Extract action_source from query parameters
+    const action_source = req.query.action_source || 'website';
+
+    // Validate action_source
+    if (!validActionSources.includes(action_source)) {
+        return res.status(400).json({ error: 'Invalid action_source value.' });
+    }
+
     // Process the request
     return res.status(200).json({ message: `${event_name} event received`, data: req.query });
 });
@@ -138,6 +175,14 @@ app.post('/api/purchase', (req, res) => {
     // Validate input
     if (!phone || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
         return res.status(400).json({ error: 'Missing required fields: phone, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
+    }
+
+    // Extract action_source from request body
+    const action_source = req.body.action_source || 'website';
+
+    // Validate action_source
+    if (!validActionSources.includes(action_source)) {
+        return res.status(400).json({ error: 'Invalid action_source value.' });
     }
 
     // Process the request
