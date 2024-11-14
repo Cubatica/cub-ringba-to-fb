@@ -12,13 +12,6 @@ function hashData(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-// Helper function to hash zip code
-function hashZipCode(zip) {
-    // Use only the first 5 digits for U.S. zip codes
-    const cleanedZip = zip.replace(/\D/g, '').substring(0, 5);
-    return crypto.createHash('sha256').update(cleanedZip).digest('hex');
-}
-
 // Function to normalize phone number
 function normalizePhoneNumber(phone) {
     // Remove non-numeric characters
@@ -86,11 +79,11 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name, client_ip_address, client_user_agent, zp } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, event_name, client_ip_address, client_user_agent } = req.body;
 
     // Validate input
-    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp) {
-        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, and zp are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp || !fbp) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, zp, and fbp are required' });
     }
 
     try {
@@ -114,9 +107,6 @@ module.exports = async (req, res) => {
         if (!validActionSources.includes(action_source)) {
             return res.status(400).json({ error: 'Invalid action_source value.' });
         }
-
-        // Hash the zip code
-        const hashedZip = hashZipCode(zp);
 
         // Prepare data for Facebook's Conversions API
         const eventData = {
@@ -166,7 +156,10 @@ module.exports = async (req, res) => {
         });
         console.log('Event sent successfully:', response.data); // Log the response from Facebook
 
-        // Prepare the response to include the hashed phone number and hashed zip code
+        // Hash the zip code
+        const hashedZip = hashZipCode(zp); // Ensure this line is present
+
+        // Prepare the response to include the hashed phone number, hashed zip code, and fbp
         return res.status(200).json({
             success: true,
             data: {
@@ -174,7 +167,8 @@ module.exports = async (req, res) => {
                 messages: [],
                 fbtrace_id: response.data.fbtrace_id, // Assuming fbtrace_id is part of the response from Facebook
                 hashed_phone: hashedPhone, // Include the hashed phone number in the response
-                hashed_zip: hashedZip // Ensure this variable is defined
+                hashed_zip: hashedZip, // Include the hashed zip code in the response
+                fbp: fbp // Include the fbp parameter in the response
             }
         });
     } catch (error) {
