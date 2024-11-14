@@ -124,6 +124,7 @@ module.exports = async (req, res) => {
                     client_user_agent: client_user_agent,
                     ct: [hashedCity], // Added hashed city
                     st: [hashedState], // Added hashed state
+                    fbp: fbp, // Added fbp without hashing
                 },
                 custom_data: {
                     value: value,
