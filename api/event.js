@@ -79,11 +79,11 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, event_name, client_ip_address, client_user_agent } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name, client_ip_address, client_user_agent } = req.body;
 
     // Validate input
-    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp || !fbp) {
-        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, zp, and fbp are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, and client_user_agent are required' });
     }
 
     try {
@@ -156,10 +156,7 @@ module.exports = async (req, res) => {
         });
         console.log('Event sent successfully:', response.data); // Log the response from Facebook
 
-        // Hash the zip code
-        const hashedZip = hashZipCode(zp); // Ensure this line is present
-
-        // Prepare the response to include the hashed phone number, hashed zip code, and fbp
+        // Prepare the response to include the hashed phone number and hashed zip code
         return res.status(200).json({
             success: true,
             data: {
@@ -167,14 +164,12 @@ module.exports = async (req, res) => {
                 messages: [],
                 fbtrace_id: response.data.fbtrace_id, // Assuming fbtrace_id is part of the response from Facebook
                 hashed_phone: hashedPhone, // Include the hashed phone number in the response
-                hashed_zip: hashedZip, // Include the hashed zip code in the response
-                fbp: fbp // Include the fbp parameter in the response
+                hashed_zip: hashedZip // Include the hashed zip code in the response
             }
         });
     } catch (error) {
-        console.error('Error sending event:', error.response ? error.response.data : error.message);
-        console.log('Request Body:', JSON.stringify(requestBody, null, 2)); // Log the request body
-        return res.status(500).json({ error: error.response?.data?.error?.message || error.message });
+        console.error('Error sending event:', error); // Log the entire error object
+        return res.status(500).json({ error: error.message || 'Internal Server Error' });
     }
 };
 
