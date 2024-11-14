@@ -52,7 +52,7 @@ function normalizePhoneNumber(phone) {
 function formatFbc(fbclid) {
     const version = 'fb';
     const subdomainIndex = 0; // Assuming the domain is 'com'
-    const creationTime = Date.now(); // Current timestamp in milliseconds
+    const creationTime = Math.floor(Date.now() * 1000); // Current timestamp in milliseconds
 
     return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`;
 }
@@ -141,10 +141,10 @@ module.exports = async (req, res) => {
         // Prepare data for Facebook's Conversions API
         const eventData = {
             data: [{
-                event_name: 'Purchase',
-                event_time: Math.floor(Date.now() / 1000),
+                event_name: event_name,
+                event_time: Math.floor(Date.now() / 1000), // Ensure this is in seconds
                 user_data: {
-                    ph: [hashedPhone],  // Facebook expects an array of hashed values
+                    ph: [hashData(normalizePhoneNumber(ph))],  // Hash the phone number
                     fbc: fbc,  // Include the fbc directly from the request body
                     client_ip_address: client_ip_address, // Include the client IP address (not hashed)
                     client_user_agent: client_user_agent, // Include the client user agent (not hashed)
@@ -155,8 +155,8 @@ module.exports = async (req, res) => {
                     value: value,  // Use the value from the request body
                     currency: currency || 'USD',
                 },
-                event_source_url: source_url,  // Updated to include event source URL
-                action_source: action_source,  // Updated to use dynamic action source
+                event_source_url: source_url,  // Include event source URL
+                action_source: 'website',  // Set action source as needed
             }]
         };
 
