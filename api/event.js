@@ -38,7 +38,7 @@ function normalizePhoneNumber(phone) {
 function formatFbc(fbclid) {
     const version = 'fb';
     const subdomainIndex = 0; // Assuming the domain is 'com'
-    const creationTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+    const creationTime = Math.floor(Date.now() * 1000); // Current timestamp in milliseconds
 
     return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`;
 }
