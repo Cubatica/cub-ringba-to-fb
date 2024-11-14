@@ -87,6 +87,10 @@ module.exports = async (req, res) => {
     const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, fbc, event_name, client_ip_address, client_user_agent, ct, st } = req.body;
 
     try {
+        // Log the incoming city and state for debugging
+        console.log('Incoming city (ct):', ct);
+        console.log('Incoming state (st):', st);
+
         // Normalize and hash the user's phone number
         const normalizedPhone = normalizePhoneNumber(ph);
         const hashedPhone = hashData(normalizedPhone);
