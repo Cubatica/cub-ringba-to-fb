@@ -9,7 +9,19 @@ app.use(express.json());
 
 // Helper function to hash data (for phone number in this case)
 function hashData(data) {
-    return crypto.createHash('sha256').update(data.trim().toLowerCase()).digest('hex');
+    return crypto.createHash('sha256').update(data).digest('hex');
+}
+
+// Function to normalize phone number
+function normalizePhoneNumber(phone) {
+    // Remove non-numeric characters
+    const cleaned = phone.replace(/\D/g, '');
+    
+    // Check if the cleaned number starts with the country code '1'
+    if (cleaned.length === 10) {
+        return '1' + cleaned; // Prepend country code for US numbers
+    }
+    return cleaned; // Return as is if already has country code
 }
 
 // Function to format the fbc parameter
@@ -60,7 +72,6 @@ module.exports = async (req, res) => {
         }
 
         // You can add logic here to handle the GET request as needed
-        // For example, you might want to log the data or return a success message
         return res.status(200).json({ message: `${event_name} event received`, data: req.query });
     }
 
@@ -73,8 +84,9 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Hash the user's phone number to protect privacy
-        const hashedPhone = hashData(ph.replace('+', '')); // Remove '+' and hash
+        // Normalize and hash the user's phone number to protect privacy
+        const normalizedPhone = normalizePhoneNumber(ph);
+        const hashedPhone = hashData(normalizedPhone); // Hash the normalized phone number
 
         // Format the fbc parameter if fbclid is provided
         let fbc = null;
