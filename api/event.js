@@ -17,11 +17,14 @@ function normalizePhoneNumber(phone) {
     // Remove non-numeric characters
     const cleaned = phone.replace(/\D/g, '');
     
-    // Check if the cleaned number starts with the country code '1'
+    // Ensure the phone number includes the country code
     if (cleaned.length === 10) {
         return '1' + cleaned; // Prepend country code for US numbers
+    } else if (cleaned.length > 10 && cleaned.startsWith('1')) {
+        return cleaned; // Return as is if already has country code
+    } else {
+        throw new Error('Invalid phone number format. Must include country code.');
     }
-    return cleaned; // Return as is if already has country code
 }
 
 // Function to format the fbc parameter
@@ -123,6 +126,7 @@ module.exports = async (req, res) => {
             }]
         };
 
+        // Log the event data for debugging
         console.log('Data being sent to Facebook:', JSON.stringify(eventData, null, 2)); // Log the event data
 
         const apiVersion = 'v18.0'; // Added API version
@@ -150,8 +154,16 @@ module.exports = async (req, res) => {
         });
         console.log('Event sent successfully:', response.data); // Log the response from Facebook
 
-        // Update the response to include meaningful data
-        return res.status(200).json({ success: true, data: response.data }); // Ensure response.data is meaningful
+        // Prepare the response to include the hashed phone number
+        return res.status(200).json({
+            success: true,
+            data: {
+                events_received: 1,
+                messages: [],
+                fbtrace_id: response.data.fbtrace_id, // Assuming fbtrace_id is part of the response from Facebook
+                hashed_phone: hashedPhone // Include the hashed phone number in the response
+            }
+        });
     } catch (error) {
         console.error('Error sending event:', error.response ? error.response.data : error.message);
         console.log('Request Body:', JSON.stringify(requestBody, null, 2)); // Log the request body
