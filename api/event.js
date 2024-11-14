@@ -157,14 +157,25 @@ module.exports = async (req, res) => {
         console.log('Event sent successfully:', response.data); // Log the response from Facebook
 
         // Prepare the response to include the hashed phone number and hashed zip code
+        console.log('Response being sent:', {
+            success: true,
+            data: {
+                events_received: 1,
+                messages: [],
+                fbtrace_id: response.data.fbtrace_id,
+                hashed_phone: hashedPhone,
+                hashed_zip: hashedZip
+            }
+        });
+
         return res.status(200).json({
             success: true,
             data: {
                 events_received: 1,
                 messages: [],
-                fbtrace_id: response.data.fbtrace_id, // Assuming fbtrace_id is part of the response from Facebook
-                hashed_phone: hashedPhone, // Include the hashed phone number in the response
-                hashed_zip: hashedZip // Include the hashed zip code in the response
+                fbtrace_id: response.data.fbtrace_id,
+                hashed_phone: hashedPhone,
+                hashed_zip: hashedZip
             }
         });
     } catch (error) {
