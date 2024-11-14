@@ -15,7 +15,7 @@ function hashData(data) {
 // Helper function to hash zip code
 function hashZipCode(zip) {
     // Use only the first 5 digits for U.S. zip codes
-    const cleanedZip = zip.replace(/\D/g, '').substring(0, 5);
+    const cleanedZip = zip.replace(/\D/g, '').substring(0, 5).toLowerCase();
     return crypto.createHash('sha256').update(cleanedZip).digest('hex');
 }
 
@@ -124,7 +124,7 @@ module.exports = async (req, res) => {
                     client_user_agent: client_user_agent,
                     ct: [hashedCity], // Added hashed city
                     st: [hashedState], // Added hashed state
-                    fbp: fbp, // Added fbp without hashing
+                    zp: [hashedZip], // Added hashed zip code
                 },
                 custom_data: {
                     value: value,
