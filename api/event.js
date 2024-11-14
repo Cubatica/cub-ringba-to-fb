@@ -250,8 +250,3 @@ app.post('/api/purchase', (req, res) => {
     return res.status(200).json({ message: `${event_name} event received`, data: req.body });
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-});
-
