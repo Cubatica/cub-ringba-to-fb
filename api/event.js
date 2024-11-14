@@ -79,11 +79,11 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name, client_ip_address } = req.body;
 
     // Validate input
-    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name) {
-        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, and event_name are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, and client_ip_address are required' });
     }
 
     try {
@@ -116,6 +116,7 @@ module.exports = async (req, res) => {
                 user_data: {
                     ph: [hashedPhone],  // Facebook expects an array of hashed values
                     fbc: fbc,  // Include the formatted fbc
+                    client_ip_address: client_ip_address // Include the client IP address (not hashed)
                 },
                 custom_data: {
                     value: value,  // Use the value from the request body
