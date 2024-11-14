@@ -84,7 +84,7 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, fbc, event_name, client_ip_address, client_user_agent } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, fbc, event_name, client_ip_address, client_user_agent, ct, st } = req.body;
 
     try {
         // Normalize and hash the user's phone number
@@ -103,6 +103,10 @@ module.exports = async (req, res) => {
         // Hash the zip code
         const hashedZip = hashZipCode(zp);
 
+        // Normalize and hash the city and state
+        const hashedCity = hashCity(ct); // Normalize and hash city
+        const hashedState = hashState(st); // Normalize and hash state
+
         // Prepare data for Facebook's Conversions API
         const eventData = {
             data: [{
@@ -113,7 +117,8 @@ module.exports = async (req, res) => {
                     fbc: fbc,
                     client_ip_address: client_ip_address,
                     client_user_agent: client_user_agent,
-                    // Removed city and state for simplicity
+                    ct: [hashedCity], // Added hashed city
+                    st: [hashedState], // Added hashed state
                 },
                 custom_data: {
                     value: value,
