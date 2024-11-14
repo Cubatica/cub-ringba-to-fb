@@ -120,6 +120,7 @@ module.exports = async (req, res) => {
                 user_data: {
                     ph: [hashedPhone],
                     fbc: fbc,
+                    fbp: fbp,
                     client_ip_address: client_ip_address,
                     client_user_agent: client_user_agent,
                     ct: [hashedCity], // Added hashed city
