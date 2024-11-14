@@ -12,6 +12,13 @@ function hashData(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
+// Helper function to hash zip code
+function hashZipCode(zip) {
+    // Use only the first 5 digits for U.S. zip codes
+    const cleanedZip = zip.replace(/\D/g, '').substring(0, 5);
+    return crypto.createHash('sha256').update(cleanedZip).digest('hex');
+}
+
 // Function to normalize phone number
 function normalizePhoneNumber(phone) {
     // Remove non-numeric characters
@@ -79,11 +86,11 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name, client_ip_address, client_user_agent } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, event_name, client_ip_address, client_user_agent } = req.body;
 
     // Validate input
-    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent) {
-        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, and client_user_agent are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp || !fbp) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, zp, and fbp are required' });
     }
 
     try {
@@ -93,8 +100,8 @@ module.exports = async (req, res) => {
 
         // Format the fbc parameter if fbclid is provided
         let fbc = null;
-        if (fbclid) {
-            fbc = formatFbc(fbclid);
+        if (fbp) {
+            fbc = formatFbc(fbp);
         }
 
         // Log the fbc value for debugging
@@ -107,6 +114,9 @@ module.exports = async (req, res) => {
         if (!validActionSources.includes(action_source)) {
             return res.status(400).json({ error: 'Invalid action_source value.' });
         }
+
+        // Hash the zip code
+        const hashedZip = hashZipCode(zp);
 
         // Prepare data for Facebook's Conversions API
         const eventData = {
@@ -164,12 +174,13 @@ module.exports = async (req, res) => {
                 messages: [],
                 fbtrace_id: response.data.fbtrace_id, // Assuming fbtrace_id is part of the response from Facebook
                 hashed_phone: hashedPhone, // Include the hashed phone number in the response
-                hashed_zip: hashedZip // Include the hashed zip code in the response
+                hashed_zip: hashedZip // Ensure this variable is defined
             }
         });
     } catch (error) {
-        console.error('Error sending event:', error); // Log the entire error object
-        return res.status(500).json({ error: error.message || 'Internal Server Error' });
+        console.error('Error sending event:', error.response ? error.response.data : error.message);
+        console.log('Request Body:', JSON.stringify(requestBody, null, 2)); // Log the request body
+        return res.status(500).json({ error: error.response?.data?.error?.message || error.message });
     }
 };
 
