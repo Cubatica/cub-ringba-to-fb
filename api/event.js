@@ -52,7 +52,7 @@ function normalizePhoneNumber(phone) {
 function formatFbc(fbclid) {
     const version = 'fb';
     const subdomainIndex = 0; // Assuming the domain is 'com'
-    const creationTime = Math.floor(Date.now() * 1000); // Current timestamp in milliseconds
+    const creationTime = Date.now(); // Current timestamp in milliseconds
 
     return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`;
 }
@@ -100,11 +100,11 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, event_name, client_ip_address, client_user_agent, ct, st } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, fbc, event_name, client_ip_address, client_user_agent, ct, st } = req.body;
 
     // Validate input
-    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp || !fbp || !ct || !st) {
-        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, zp, fbp, ct, and st are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp || !fbp || !fbc || !ct || !st) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, zp, fbp, fbc, ct, and st are required' });
     }
 
     try {
@@ -145,7 +145,7 @@ module.exports = async (req, res) => {
                 event_time: Math.floor(Date.now() / 1000),
                 user_data: {
                     ph: [hashedPhone],  // Facebook expects an array of hashed values
-                    fbc: fbc,  // Include the formatted fbc
+                    fbc: fbc,  // Include the fbc directly from the request body
                     client_ip_address: client_ip_address, // Include the client IP address (not hashed)
                     client_user_agent: client_user_agent, // Include the client user agent (not hashed)
                     city: [hashedCity], // Include the hashed city
