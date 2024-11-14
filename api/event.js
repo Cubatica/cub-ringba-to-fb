@@ -19,6 +19,13 @@ function hashZipCode(zip) {
     return crypto.createHash('sha256').update(cleanedZip).digest('hex');
 }
 
+// Helper function to hash city
+function hashCity(city) {
+    // Normalize the city name: lowercase, remove punctuation, special characters, and spaces
+    const normalizedCity = city.toLowerCase().replace(/[^a-z]/g, '');
+    return crypto.createHash('sha256').update(normalizedCity).digest('hex');
+}
+
 // Function to normalize phone number
 function normalizePhoneNumber(phone) {
     // Remove non-numeric characters
@@ -86,11 +93,11 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, event_name, client_ip_address, client_user_agent } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, event_name, client_ip_address, client_user_agent, ct } = req.body;
 
     // Validate input
-    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp || !fbp) {
-        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, zp, and fbp are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp || !fbp || !ct) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, zp, fbp, and ct are required' });
     }
 
     try {
@@ -118,6 +125,9 @@ module.exports = async (req, res) => {
         // Hash the zip code
         const hashedZip = hashZipCode(zp);
 
+        // Hash the city
+        const hashedCity = hashCity(ct);
+
         // Prepare data for Facebook's Conversions API
         const eventData = {
             data: [{
@@ -127,7 +137,8 @@ module.exports = async (req, res) => {
                     ph: [hashedPhone],  // Facebook expects an array of hashed values
                     fbc: fbc,  // Include the formatted fbc
                     client_ip_address: client_ip_address, // Include the client IP address (not hashed)
-                    client_user_agent: client_user_agent // Include the client user agent (not hashed)
+                    client_user_agent: client_user_agent, // Include the client user agent (not hashed)
+                    city: [hashedCity] // Include the hashed city
                 },
                 custom_data: {
                     value: value,  // Use the value from the request body
@@ -174,7 +185,8 @@ module.exports = async (req, res) => {
                 messages: [],
                 fbtrace_id: response.data.fbtrace_id, // Assuming fbtrace_id is part of the response from Facebook
                 hashed_phone: hashedPhone, // Include the hashed phone number in the response
-                hashed_zip: hashedZip // Ensure this variable is defined
+                hashed_zip: hashedZip, // Ensure this variable is defined
+                hashed_city: hashedCity // Ensure this variable is defined
             }
         });
     } catch (error) {
