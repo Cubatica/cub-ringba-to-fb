@@ -12,6 +12,13 @@ function hashData(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
+// Helper function to hash zip code
+function hashZipCode(zip) {
+    // Use only the first 5 digits for U.S. zip codes
+    const cleanedZip = zip.replace(/\D/g, '').substring(0, 5);
+    return crypto.createHash('sha256').update(cleanedZip).digest('hex');
+}
+
 // Function to normalize phone number
 function normalizePhoneNumber(phone) {
     // Remove non-numeric characters
@@ -79,17 +86,20 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, fbclid, event_name, client_ip_address, client_user_agent } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, event_name, client_ip_address, client_user_agent } = req.body;
 
     // Validate input
-    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent) {
-        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, and client_user_agent are required' });
+    if (!ph || (value === undefined || value === null) || !PIXEL_ID || !ACCESS_TOKEN || !source_url || !event_name || !client_ip_address || !client_user_agent || !zp) {
+        return res.status(400).json({ error: 'Missing required fields: ph, value, PIXEL_ID, ACCESS_TOKEN, source_url, event_name, client_ip_address, client_user_agent, and zp are required' });
     }
 
     try {
         // Normalize and hash the user's phone number to protect privacy
         const normalizedPhone = normalizePhoneNumber(ph);
         const hashedPhone = hashData(normalizedPhone); // Hash the normalized phone number
+
+        // Hash the zip code
+        const hashedZip = hashZipCode(zp); // Hash the zip code
 
         // Format the fbc parameter if fbclid is provided
         let fbc = null;
@@ -157,25 +167,14 @@ module.exports = async (req, res) => {
         console.log('Event sent successfully:', response.data); // Log the response from Facebook
 
         // Prepare the response to include the hashed phone number and hashed zip code
-        console.log('Response being sent:', {
-            success: true,
-            data: {
-                events_received: 1,
-                messages: [],
-                fbtrace_id: response.data.fbtrace_id,
-                hashed_phone: hashedPhone,
-                hashed_zip: hashedZip
-            }
-        });
-
         return res.status(200).json({
             success: true,
             data: {
                 events_received: 1,
                 messages: [],
-                fbtrace_id: response.data.fbtrace_id,
-                hashed_phone: hashedPhone,
-                hashed_zip: hashedZip
+                fbtrace_id: response.data.fbtrace_id, // Assuming fbtrace_id is part of the response from Facebook
+                hashed_phone: hashedPhone, // Include the hashed phone number in the response
+                hashed_zip: hashedZip // Include the hashed zip code in the response
             }
         });
     } catch (error) {
