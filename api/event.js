@@ -84,10 +84,11 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, fbc, event_name, client_ip_address, client_user_agent, st } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, fbc, event_name, client_ip_address, client_user_agent, ct, st } = req.body;
 
     try {
-        // Log the incoming state for debugging
+        // Log the incoming city and state for debugging
+        console.log('Incoming city (ct):', ct);
         console.log('Incoming state (st):', st);
 
         // Normalize and hash the user's phone number
@@ -106,6 +107,8 @@ module.exports = async (req, res) => {
         // Hash the zip code
         const hashedZip = hashZipCode(zp);
 
+        // Normalize and hash the city
+        const hashedCity = hashCity(ct); // Normalize and hash city
         // Normalize and hash the state
         const hashedState = hashState(st); // Normalize and hash state
 
@@ -119,7 +122,7 @@ module.exports = async (req, res) => {
                     fbc: fbc,
                     client_ip_address: client_ip_address,
                     client_user_agent: client_user_agent,
-                    // ct: [hashedCity], // Removed hashed city
+                    ct: [hashedCity], // Added hashed city
                     st: [hashedState], // Added hashed state
                 },
                 custom_data: {
