@@ -84,7 +84,7 @@ module.exports = async (req, res) => {
     }
 
     // Extract purchase data from the request body for POST
-    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, fbc, event_name, client_ip_address, client_user_agent, ct, st } = req.body;
+    const { ph, value, currency, PIXEL_ID, ACCESS_TOKEN, source_url, zp, fbp, fbc, event_name, client_ip_address, client_user_agent, ct, st, action_source } = req.body;
 
     try {
         // Log the incoming city and state for debugging
@@ -132,7 +132,7 @@ module.exports = async (req, res) => {
                     currency: currency || 'USD',
                 },
                 event_source_url: source_url,
-                action_source: 'website',
+                action_source: action_source,
             }]
         };
 
