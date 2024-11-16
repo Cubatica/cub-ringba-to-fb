@@ -101,6 +101,12 @@ module.exports = async (req, res) => {
             fbc = formatFbc(fbp);
         }
 
+        // Check if fbc is in the correct format
+        if (fbc && !/^fb\.[0-9]+\.[0-9a-f]{32}$/.test(fbc)) {
+            console.error('Invalid fbc format:', fbc);
+            return res.status(400).json({ error: 'Invalid fbc format' });
+        }
+
         // Log the fbc value for debugging
         console.log('Formatted fbc:', fbc);
 
@@ -111,6 +117,10 @@ module.exports = async (req, res) => {
         const hashedCity = hashCity(ct); // Normalize and hash city
         // Normalize and hash the state
         const hashedState = hashState(st); // Normalize and hash state
+
+        // Log the fbp and fbc values for debugging
+        console.log('fbp:', fbp);
+        console.log('fbc:', fbc);
 
         // Prepare data for Facebook's Conversions API
         const eventData = {
