@@ -158,7 +158,7 @@ module.exports = async (req, res) => {
                 'Content-Type': 'application/json',
             },
         });
-        console.log('Event sent successfully:', response.data);
+        console.log('Response from Facebook API:', response.data);
 
         // Prepare the response
         return res.status(200).json({
@@ -172,7 +172,7 @@ module.exports = async (req, res) => {
         });
     } catch (error) {
         console.error('Error sending event:', error.message); // Log the error message
-        console.error('Error details:', error.response ? error.response.data : error); // Log detailed error response
+        console.error('Error details:', error); // Log the entire error object
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
