@@ -173,9 +173,24 @@ module.exports = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error sending event:', error.message); // Log the error message
-        console.error('Error details:', error); // Log the entire error object
-        return res.status(500).json({ error: 'Internal Server Error' });
+        // Log the error details for debugging
+        console.error('Error sending event:', error.message);
+        console.error('Error details:', error);
+
+        // Check if the error is from the Facebook API
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            return res.status(error.response.status).json({
+                error: 'Error from Facebook API',
+                details: error.response.data,
+            });
+        } else if (error.request) {
+            // The request was made but no response was received
+            return res.status(500).json({ error: 'No response received from Facebook API' });
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            return res.status(500).json({ error: 'An unexpected error occurred' });
+        }
     }
 };
 
