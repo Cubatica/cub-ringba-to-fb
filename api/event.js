@@ -122,6 +122,9 @@ module.exports = async (req, res) => {
         console.log('fbp:', fbp);
         console.log('fbc:', fbc);
 
+        // Log incoming request data
+        console.log('Incoming request body:', req.body);
+
         // Prepare data for Facebook's Conversions API
         const eventData = {
             data: [{
@@ -133,9 +136,9 @@ module.exports = async (req, res) => {
                     fbp: fbp,
                     client_ip_address: client_ip_address,
                     client_user_agent: client_user_agent,
-                    ct: [hashedCity], // Added hashed city
-                    st: [hashedState], // Added hashed state
-                    zp: [hashedZip], // Added hashed zip code
+                    ct: [hashedCity],
+                    st: [hashedState],
+                    zp: [hashedZip],
                 },
                 custom_data: {
                     value: value,
@@ -146,8 +149,7 @@ module.exports = async (req, res) => {
             }]
         };
 
-        // Log the event data for debugging
-        console.log('Data being sent to Facebook:', JSON.stringify(eventData, null, 2));
+        console.log('Event data being sent to Facebook:', JSON.stringify(eventData, null, 2));
 
         const apiVersion = 'v18.0';
         const url = `https://graph.facebook.com/${apiVersion}/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`;
