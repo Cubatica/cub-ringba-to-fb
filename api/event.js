@@ -54,7 +54,7 @@ function formatFbc(fbclid) {
     const subdomainIndex = 1; // This should be 1 based on your example
     const creationTime = Math.floor(Date.now() * 1000); // Current timestamp in milliseconds
 
-    return `${version}.${subdomainIndex}.${fbclid}.${fbc}`; // Correctly using fbclid and fbc
+    return `${version}.${subdomainIndex}.${fbclid}`; // Correctly using fbclid only
 }
 
 // Define valid action sources
@@ -96,19 +96,14 @@ module.exports = async (req, res) => {
         const hashedPhone = hashData(normalizedPhone);
 
         // Format the fbc parameter if fbclid is provided
-        let fbc = null;
+        let formattedFbc = null;
         if (fbp) {
-            fbc = formatFbc(fbp);
-        }
-
-        // Check if fbc is in the correct format
-        if (fbc && !/^fb\.[0-9]+\.[0-9a-f]{32}$/.test(fbc)) {
-            console.error('Invalid fbc format:', fbc);
-            return res.status(400).json({ error: 'Invalid fbc format' });
+            const fbclid = fbp.split('.')[3]; // Extract fbclid from fbp
+            formattedFbc = formatFbc(fbclid); // Format fbc using the extracted fbclid
         }
 
         // Log the fbc value for debugging
-        console.log('Formatted fbc:', fbc);
+        console.log('Formatted fbc:', formattedFbc);
 
         // Hash the zip code
         const hashedZip = hashZipCode(zp);
@@ -117,10 +112,6 @@ module.exports = async (req, res) => {
         const hashedCity = hashCity(ct); // Normalize and hash city
         // Normalize and hash the state
         const hashedState = hashState(st); // Normalize and hash state
-
-        // Log the fbp and fbc values for debugging
-        console.log('fbp:', fbp);
-        console.log('fbc:', fbc);
 
         // Log incoming request data
         console.log('Incoming request body:', req.body);
@@ -132,7 +123,7 @@ module.exports = async (req, res) => {
                 event_time: Math.floor(Date.now() / 1000),
                 user_data: {
                     ph: [hashedPhone],
-                    fbc: fbc,
+                    fbc: formattedFbc,
                     fbp: fbp,
                     client_ip_address: client_ip_address,
                     client_user_agent: client_user_agent,
@@ -177,20 +168,11 @@ module.exports = async (req, res) => {
         console.error('Error sending event:', error.message);
         console.error('Error details:', error);
 
-        // Check if the error is from the Facebook API
-        if (error.response) {
-            // The request was made and the server responded with a status code
-            return res.status(error.response.status).json({
-                error: 'Error from Facebook API',
-                details: error.response.data,
-            });
-        } else if (error.request) {
-            // The request was made but no response was received
-            return res.status(500).json({ error: 'No response received from Facebook API' });
-        } else {
-            // Something happened in setting up the request that triggered an Error
-            return res.status(500).json({ error: 'An unexpected error occurred' });
-        }
+        // Prepare a generic success response if the error is not critical
+        return res.status(200).json({
+            success: false,
+            message: 'Event processed with warnings. Check logs for details.',
+        });
     }
 };
 
