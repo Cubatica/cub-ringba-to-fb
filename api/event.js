@@ -51,10 +51,10 @@ function normalizePhoneNumber(phone) {
 // Function to format the fbc parameter
 function formatFbc(fbclid) {
     const version = 'fb';
-    const subdomainIndex = 0; // Assuming the domain is 'com'
+    const subdomainIndex = 1; // This should be 1 based on your example
     const creationTime = Math.floor(Date.now() * 1000); // Current timestamp in milliseconds
 
-    return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`;
+    return `${version}.${subdomainIndex}.${fbclid}.${fbc}`; // Correctly using fbclid and fbc
 }
 
 // Define valid action sources
