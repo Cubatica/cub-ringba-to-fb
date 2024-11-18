@@ -52,9 +52,9 @@ function normalizePhoneNumber(phone) {
 function formatFbc(fbclid) {
     const version = 'fb';
     const subdomainIndex = 1; // This should be 1 based on your example
-    const creationTime = Math.floor(Date.now() * 1000); // Current timestamp in milliseconds
+    const creationTime = Math.floor(Date.now()); // Current timestamp in milliseconds
 
-    return `${version}.${subdomainIndex}.${fbclid}`; // Correctly using fbclid only
+    return `${version}.${subdomainIndex}.${creationTime}.${fbclid}`; // Correctly using fbclid only
 }
 
 // Define valid action sources
@@ -95,15 +95,21 @@ module.exports = async (req, res) => {
         const normalizedPhone = normalizePhoneNumber(ph);
         const hashedPhone = hashData(normalizedPhone);
 
-        // Format the fbc parameter if fbclid is provided
-        let formattedFbc = null;
-        if (fbp) {
-            const fbclid = fbp.split('.')[3]; // Extract fbclid from fbp
-            formattedFbc = formatFbc(fbclid); // Format fbc using the extracted fbclid
+        // Extract fbclid from the request body
+        const { fbclid } = req.body; // Assuming fbclid is provided in the request body
+
+        // Initialize fbc
+        let fbc = null;
+
+        // If fbclid is provided, format fbc
+        if (fbclid) {
+            fbc = formatFbc(fbclid); // Format fbc using the extracted fbclid
+        } else {
+            console.warn('fbclid is not provided in the request body.');
         }
 
         // Log the fbc value for debugging
-        console.log('Formatted fbc:', formattedFbc);
+        console.log('Formatted fbc:', fbc);
 
         // Hash the zip code
         const hashedZip = hashZipCode(zp);
@@ -123,7 +129,7 @@ module.exports = async (req, res) => {
                 event_time: Math.floor(Date.now() / 1000),
                 user_data: {
                     ph: [hashedPhone],
-                    fbc: formattedFbc,
+                    fbc: fbc, // Include the formatted fbc
                     fbp: fbp,
                     client_ip_address: client_ip_address,
                     client_user_agent: client_user_agent,
